@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:rfip:schema:value:0.2.0",
+  "title": "RFIP Value",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "unit_namespace",
+    "unit",
+    "amount"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "currency",
+        "credit",
+        "point",
+        "token",
+        "usage_unit",
+        "compute_unit",
+        "custom"
+      ]
+    },
+    "unit_namespace": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._:-]{1,127}$"
+    },
+    "unit": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "amount": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "currency"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "unit_namespace": {
+            "const": "iso4217"
+          },
+          "unit": {
+            "pattern": "^[A-Z]{3}$"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "custom"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "unit_namespace": {
+            "not": {
+              "enum": [
+                "rfip",
+                "iso4217"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}
