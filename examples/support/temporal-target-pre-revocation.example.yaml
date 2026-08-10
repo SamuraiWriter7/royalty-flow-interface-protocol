@@ -1,0 +1,25 @@
+schema_version: "0.5.0"
+
+flow_request_id: "flow-request-pre-revocation"
+actor_id: "actor-revoked"
+
+origin_id: "origin-001"
+trace_id: "trace-001"
+
+value:
+  type: "currency"
+  unit_namespace: "iso4217"
+  unit: "JPY"
+  amount: 1000
+
+occurred_at: "2026-08-10T00:00:04Z"
+
+signature:
+  algorithm: "Ed25519"
+  key_id: "did:example:actor-revoked#key-1"
+  signer_id: "actor-revoked"
+  canonicalization: "JCS-RFC8785"
+  scope: "record-without-signature-value"
+  encoding: "base64url"
+  signed_at: "2026-08-10T00:00:04Z"
+  value: "1y8jcJxixa1YQluOP9Y56geAPOUr6EmF-uQPUJc7x3IK0Ki2nG5Yj-kmVlWx-eCLhkRrwyaEskY-tnwHP0FzAA"
