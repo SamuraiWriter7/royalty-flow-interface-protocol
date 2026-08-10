@@ -1,9 +1,10 @@
-schema_version: "0.3.0"
+schema_version: "0.4.0"
 
 flow_id: "flow-001"
 flow_request_id: "flow-request-001"
 
 status: "accepted"
+
 received_at: "2026-08-10T00:00:01Z"
 
 signature:
@@ -14,4 +15,4 @@ signature:
   scope: "record-without-signature-value"
   encoding: "base64url"
   signed_at: "2026-08-10T00:00:01Z"
-  value: "3eOHO45lHtFKGuqW5Yrulm4I80z5ZNb_qTFqXo8gkdgM0Z9_fLkN8FCQs85hAn_rOCHw-1eQLDM1GMm07lRXBA"
+  value: "nWhGoU47TIzQZkQ9vAxJNPe5bI6iJtrqCvNNLw52iIsIF1WGFa7h3eXAkwInC0d7iljcEwhKe9lxqXTorXXgBQ"
