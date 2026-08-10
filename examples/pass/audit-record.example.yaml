@@ -1,4 +1,4 @@
-schema_version: "0.2.0"
+schema_version: "0.3.0"
 
 audit_id: "audit-001"
 flow_id: "flow-001"
@@ -13,6 +13,7 @@ checks:
   - "trace-reference-present"
   - "trace-origin-match"
   - "flow-trace-consistency"
+  - "signature-verified"
 
 audited_at: "2026-08-10T00:00:02Z"
 
@@ -21,7 +22,7 @@ signature:
   key_id: "did:example:auditor-alpha#key-1"
   signer_id: "auditor-alpha"
   canonicalization: "JCS-RFC8785"
-  scope: "record-without-signature"
+  scope: "record-without-signature-value"
   encoding: "base64url"
-  signed_at: "2026-08-10T00:00:00Z"
-  value: "c2lnX2F1ZGl0X3JlY29yZA"
+  signed_at: "2026-08-10T00:00:02Z"
+  value: "L96gfqztI5HX75GR5luo3zSOAlPLxvo1btZhiE5RchueRTa1esSuaoJq2u3avj7DqkXvy7OR-Z_9pc01TXJpCw"
