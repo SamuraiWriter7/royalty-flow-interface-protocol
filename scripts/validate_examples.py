@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate RFIP v0.3 schemas, invariants, and Ed25519 signatures."""
+"""Validate RFIP v0.4 schemas, semantics, signatures, and key lifecycle."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ import json
 import math
 import sys
 
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -87,6 +88,39 @@ FAIL_TYPE_HINTS = {
 
     "unsigned-trace.example.yaml":
         "trace-record",
+
+    "rotated-key-after-cutover.example.yaml":
+        "trace-record",
+
+    "revoked-key-after-revocation.example.yaml":
+        "flow-request",
+
+    "expired-key-after-valid-until.example.yaml":
+        "flow-request",
+
+    "key-not-yet-valid.example.yaml":
+        "flow-request",
+
+    "signature-before-record-time.example.yaml":
+        "flow-request",
+}
+
+
+RECORD_TIME_FIELDS = {
+    "flow-request":
+        "occurred_at",
+
+    "flow-receipt":
+        "received_at",
+
+    "trace-record":
+        "created_at",
+
+    "audit-record":
+        "audited_at",
+
+    "settlement-receipt":
+        "settled_at",
 }
 
 
@@ -123,6 +157,18 @@ def load_yaml(
     return data
 
 
+def parse_datetime(
+    value: str,
+) -> datetime:
+
+    return datetime.fromisoformat(
+        value.replace(
+            "Z",
+            "+00:00",
+        )
+    )
+
+
 def build_schema_registry() -> Registry:
 
     registry = Registry()
@@ -156,13 +202,6 @@ def record_type_for(
     path: Path,
     record: dict[str, Any],
 ) -> str:
-    """
-    Infer the intended record type.
-
-    Fail fixtures may intentionally omit
-    required fields, so filename hints are
-    checked before field inference.
-    """
 
     if path.name in FAIL_TYPE_HINTS:
         return FAIL_TYPE_HINTS[
@@ -293,12 +332,6 @@ def b64url_decode(
 def signature_payload(
     record: dict[str, Any],
 ) -> bytes:
-    """
-    RFIP v0.3 signature input.
-
-    Protect the entire record except
-    signature.value.
-    """
 
     payload = copy.deepcopy(
         record
@@ -315,8 +348,159 @@ def signature_payload(
     )
 
 
+def verification_key_registry_errors(
+    registry_doc: dict[str, Any],
+    keys: dict[str, dict[str, Any]],
+) -> list[str]:
+
+    errors: list[str] = []
+
+    for key_id, item in keys.items():
+
+        valid_from = parse_datetime(
+            item[
+                "valid_from"
+            ]
+        )
+
+        valid_until_raw = item.get(
+            "valid_until"
+        )
+
+        if valid_until_raw is not None:
+
+            valid_until = parse_datetime(
+                valid_until_raw
+            )
+
+            if valid_until <= valid_from:
+
+                errors.append(
+                    "FI-018: valid_until MUST "
+                    "be later than valid_from: "
+                    f"{key_id}"
+                )
+
+        revoked_raw = item.get(
+            "revoked_at"
+        )
+
+        if revoked_raw is not None:
+
+            revoked_at = parse_datetime(
+                revoked_raw
+            )
+
+            if revoked_at <= valid_from:
+
+                errors.append(
+                    "FI-018: revoked_at MUST "
+                    "be later than valid_from: "
+                    f"{key_id}"
+                )
+
+        superseded_by = item.get(
+            "superseded_by"
+        )
+
+        if superseded_by is not None:
+
+            if superseded_by == key_id:
+
+                errors.append(
+                    "FI-018: key MUST NOT "
+                    "supersede itself: "
+                    f"{key_id}"
+                )
+
+            successor = keys.get(
+                superseded_by
+            )
+
+            if successor is None:
+
+                errors.append(
+                    "FI-018: superseded_by "
+                    "does not resolve: "
+                    f"{key_id} -> "
+                    f"{superseded_by}"
+                )
+
+            else:
+
+                if (
+                    successor[
+                        "controller_id"
+                    ]
+                    != item[
+                        "controller_id"
+                    ]
+                ):
+
+                    errors.append(
+                        "FI-018: rotated keys "
+                        "MUST share controller_id: "
+                        f"{key_id}"
+                    )
+
+                if (
+                    successor.get(
+                        "supersedes"
+                    )
+                    != key_id
+                ):
+
+                    errors.append(
+                        "FI-018: rotation link "
+                        "MUST be reciprocal: "
+                        f"{key_id}"
+                    )
+
+            if "valid_until" not in item:
+
+                errors.append(
+                    "FI-018: superseded key "
+                    "MUST declare valid_until: "
+                    f"{key_id}"
+                )
+
+        supersedes = item.get(
+            "supersedes"
+        )
+
+        if supersedes is not None:
+
+            predecessor = keys.get(
+                supersedes
+            )
+
+            if predecessor is None:
+
+                errors.append(
+                    "FI-018: supersedes "
+                    "does not resolve: "
+                    f"{key_id} -> "
+                    f"{supersedes}"
+                )
+
+            elif (
+                predecessor.get(
+                    "superseded_by"
+                )
+                != key_id
+            ):
+
+                errors.append(
+                    "FI-018: reverse rotation "
+                    "link is missing: "
+                    f"{key_id}"
+                )
+
+    return errors
+
+
 def load_verification_keys() -> tuple[
-    dict[str, Any],
+    dict[str, dict[str, Any]],
     list[str],
 ]:
 
@@ -362,41 +546,50 @@ def load_verification_keys() -> tuple[
             f"{error.message}"
         )
 
-    keys: dict[str, Any] = {}
+    keys: dict[
+        str,
+        dict[str, Any],
+    ] = {}
 
-    if not errors:
+    if errors:
+        return keys, errors
 
-        for item in registry_doc[
-            "keys"
-        ]:
+    for item in registry_doc[
+        "keys"
+    ]:
 
-            key_id = item[
-                "key_id"
-            ]
+        key_id = item[
+            "key_id"
+        ]
 
-            if key_id in keys:
+        if key_id in keys:
 
-                errors.append(
-                    "duplicate verification "
-                    f"key_id: {key_id}"
-                )
+            errors.append(
+                "FI-018: duplicate "
+                "verification key_id: "
+                f"{key_id}"
+            )
 
-            else:
+        else:
 
-                keys[
-                    key_id
-                ] = item
+            keys[
+                key_id
+            ] = item
 
-    return (
-        keys,
-        errors,
+    errors.extend(
+        verification_key_registry_errors(
+            registry_doc,
+            keys,
+        )
     )
+
+    return keys, errors
 
 
 def signature_errors(
     record: dict[str, Any],
     verification_keys:
-        dict[str, Any],
+        dict[str, dict[str, Any]],
 ) -> list[str]:
 
     errors: list[str] = []
@@ -453,6 +646,79 @@ def signature_errors(
             "key algorithm"
         )
 
+    signed_at = parse_datetime(
+        signature[
+            "signed_at"
+        ]
+    )
+
+    valid_from = parse_datetime(
+        key_record[
+            "valid_from"
+        ]
+    )
+
+    if signed_at < valid_from:
+
+        errors.append(
+            "FI-015: signature.signed_at "
+            "precedes key.valid_from"
+        )
+
+    valid_until_raw = (
+        key_record.get(
+            "valid_until"
+        )
+    )
+
+    if valid_until_raw is not None:
+
+        valid_until = parse_datetime(
+            valid_until_raw
+        )
+
+        if signed_at >= valid_until:
+
+            errors.append(
+                "FI-016: key was no longer "
+                "valid at signature.signed_at"
+            )
+
+    revoked_raw = key_record.get(
+        "revoked_at"
+    )
+
+    if revoked_raw is not None:
+
+        revoked_at = parse_datetime(
+            revoked_raw
+        )
+
+        if signed_at >= revoked_at:
+
+            errors.append(
+                "FI-017: key was revoked "
+                "at or before "
+                "signature.signed_at"
+            )
+
+    try:
+
+        payload = signature_payload(
+            record
+        )
+
+    except Exception as exc:
+
+        errors.append(
+            "FI-013: record could not be "
+            "canonicalized using "
+            "JCS-RFC8785: "
+            f"{exc}"
+        )
+
+        return errors
+
     try:
 
         public_bytes = (
@@ -482,9 +748,7 @@ def signature_errors(
 
         public_key.verify(
             signature_bytes,
-            signature_payload(
-                record
-            ),
+            payload,
         )
 
     except (
@@ -501,6 +765,39 @@ def signature_errors(
     return errors
 
 
+def record_time_errors(
+    record_type: str,
+    record: dict[str, Any],
+) -> list[str]:
+
+    field = RECORD_TIME_FIELDS[
+        record_type
+    ]
+
+    record_time = parse_datetime(
+        record[
+            field
+        ]
+    )
+
+    signed_at = parse_datetime(
+        record[
+            "signature"
+        ][
+            "signed_at"
+        ]
+    )
+
+    if signed_at < record_time:
+
+        return [
+            "FI-019: signature.signed_at "
+            f"MUST NOT precede {field}"
+        ]
+
+    return []
+
+
 def semantic_errors(
     record_type: str,
     record: dict[str, Any],
@@ -514,12 +811,19 @@ def semantic_errors(
     flow_receipts:
         dict[str, dict[str, Any]],
     verification_keys:
-        dict[str, Any],
+        dict[str, dict[str, Any]],
 ) -> list[str]:
 
     errors = signature_errors(
         record,
         verification_keys,
+    )
+
+    errors.extend(
+        record_time_errors(
+            record_type,
+            record,
+        )
     )
 
     if record_type == "flow-request":
@@ -995,7 +1299,7 @@ def validate_directory(
     expect_failure: bool,
     context,
     verification_keys:
-        dict[str, Any],
+        dict[str, dict[str, Any]],
 ) -> bool:
 
     (
@@ -1135,7 +1439,7 @@ def main() -> int:
 
     print(
         "=== Royalty Flow Interface "
-        "Protocol v0.3 Validation ==="
+        "Protocol v0.4 Validation ==="
     )
 
     for name, path in (
