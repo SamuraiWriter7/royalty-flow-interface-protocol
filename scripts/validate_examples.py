@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Validate RFIP v0.4 schemas, semantics, signatures, and key lifecycle."""
+"""Validate RFIP v0.5 including Temporal Evidence / Observation Receipts."""
 
 from __future__ import annotations
 
 import base64
 import binascii
 import copy
+import hashlib
 import json
 import math
 import sys
@@ -56,8 +57,7 @@ SCHEMA_FILES = {
         SCHEMAS / "signature-envelope.schema.json",
 
     "verification-key-registry":
-        SCHEMAS
-        / "verification-key-registry.schema.json",
+        SCHEMAS / "verification-key-registry.schema.json",
 
     "flow-request":
         SCHEMAS / "flow-request.schema.json",
@@ -73,6 +73,28 @@ SCHEMA_FILES = {
 
     "settlement-receipt":
         SCHEMAS / "settlement-receipt.schema.json",
+
+    "observation-receipt":
+        SCHEMAS / "observation-receipt.schema.json",
+}
+
+
+RECORD_TIME_FIELDS = {
+    "flow-request": "occurred_at",
+    "flow-receipt": "received_at",
+    "trace-record": "created_at",
+    "audit-record": "audited_at",
+    "settlement-receipt": "settled_at",
+    "observation-receipt": "observed_at",
+}
+
+
+RECORD_ID_FIELDS = {
+    "flow-request": "flow_request_id",
+    "flow-receipt": "flow_id",
+    "trace-record": "trace_id",
+    "audit-record": "audit_id",
+    "settlement-receipt": "settlement_id",
 }
 
 
@@ -91,36 +113,6 @@ FAIL_TYPE_HINTS = {
 
     "rotated-key-after-cutover.example.yaml":
         "trace-record",
-
-    "revoked-key-after-revocation.example.yaml":
-        "flow-request",
-
-    "expired-key-after-valid-until.example.yaml":
-        "flow-request",
-
-    "key-not-yet-valid.example.yaml":
-        "flow-request",
-
-    "signature-before-record-time.example.yaml":
-        "flow-request",
-}
-
-
-RECORD_TIME_FIELDS = {
-    "flow-request":
-        "occurred_at",
-
-    "flow-receipt":
-        "received_at",
-
-    "trace-record":
-        "created_at",
-
-    "audit-record":
-        "audited_at",
-
-    "settlement-receipt":
-        "settled_at",
 }
 
 
@@ -149,6 +141,7 @@ def load_yaml(
         data,
         dict,
     ):
+
         raise ValueError(
             f"{path}: top-level YAML "
             "value must be an object"
@@ -181,13 +174,11 @@ def build_schema_registry() -> Registry:
             path
         )
 
-        registry = (
-            registry.with_resource(
-                schema["$id"],
-                Resource.from_contents(
-                    schema
-                ),
-            )
+        registry = registry.with_resource(
+            schema["$id"],
+            Resource.from_contents(
+                schema
+            ),
         )
 
     return registry
@@ -202,6 +193,9 @@ def record_type_for(
     path: Path,
     record: dict[str, Any],
 ) -> str:
+
+    if "observation_id" in record:
+        return "observation-receipt"
 
     if path.name in FAIL_TYPE_HINTS:
         return FAIL_TYPE_HINTS[
@@ -253,9 +247,6 @@ def record_type_for(
     ):
         return "flow-request"
 
-    if path.parent == FAIL_DIR:
-        return "flow-request"
-
     raise ValueError(
         f"Cannot infer record type "
         f"for {path}"
@@ -267,15 +258,13 @@ def schema_errors(
     record: dict[str, Any],
 ) -> list[str]:
 
-    schema = load_json(
-        SCHEMA_FILES[
-            record_type
-        ]
-    )
-
     validator = (
         Draft202012Validator(
-            schema,
+            load_json(
+                SCHEMA_FILES[
+                    record_type
+                ]
+            ),
             registry=SCHEMA_REGISTRY,
             format_checker=FormatChecker(),
         )
@@ -322,10 +311,8 @@ def b64url_decode(
         )
     )
 
-    return (
-        base64.urlsafe_b64decode(
-            value + padding
-        )
+    return base64.urlsafe_b64decode(
+        value + padding
     )
 
 
@@ -348,155 +335,23 @@ def signature_payload(
     )
 
 
-def verification_key_registry_errors(
-    registry_doc: dict[str, Any],
-    keys: dict[str, dict[str, Any]],
-) -> list[str]:
+def record_digest(
+    record: dict[str, Any],
+) -> str:
 
-    errors: list[str] = []
-
-    for key_id, item in keys.items():
-
-        valid_from = parse_datetime(
-            item[
-                "valid_from"
-            ]
+    digest = hashlib.sha256(
+        rfc8785.dumps(
+            record
         )
+    ).digest()
 
-        valid_until_raw = item.get(
-            "valid_until"
+    return (
+        base64.urlsafe_b64encode(
+            digest
         )
-
-        if valid_until_raw is not None:
-
-            valid_until = parse_datetime(
-                valid_until_raw
-            )
-
-            if valid_until <= valid_from:
-
-                errors.append(
-                    "FI-018: valid_until MUST "
-                    "be later than valid_from: "
-                    f"{key_id}"
-                )
-
-        revoked_raw = item.get(
-            "revoked_at"
-        )
-
-        if revoked_raw is not None:
-
-            revoked_at = parse_datetime(
-                revoked_raw
-            )
-
-            if revoked_at <= valid_from:
-
-                errors.append(
-                    "FI-018: revoked_at MUST "
-                    "be later than valid_from: "
-                    f"{key_id}"
-                )
-
-        superseded_by = item.get(
-            "superseded_by"
-        )
-
-        if superseded_by is not None:
-
-            if superseded_by == key_id:
-
-                errors.append(
-                    "FI-018: key MUST NOT "
-                    "supersede itself: "
-                    f"{key_id}"
-                )
-
-            successor = keys.get(
-                superseded_by
-            )
-
-            if successor is None:
-
-                errors.append(
-                    "FI-018: superseded_by "
-                    "does not resolve: "
-                    f"{key_id} -> "
-                    f"{superseded_by}"
-                )
-
-            else:
-
-                if (
-                    successor[
-                        "controller_id"
-                    ]
-                    != item[
-                        "controller_id"
-                    ]
-                ):
-
-                    errors.append(
-                        "FI-018: rotated keys "
-                        "MUST share controller_id: "
-                        f"{key_id}"
-                    )
-
-                if (
-                    successor.get(
-                        "supersedes"
-                    )
-                    != key_id
-                ):
-
-                    errors.append(
-                        "FI-018: rotation link "
-                        "MUST be reciprocal: "
-                        f"{key_id}"
-                    )
-
-            if "valid_until" not in item:
-
-                errors.append(
-                    "FI-018: superseded key "
-                    "MUST declare valid_until: "
-                    f"{key_id}"
-                )
-
-        supersedes = item.get(
-            "supersedes"
-        )
-
-        if supersedes is not None:
-
-            predecessor = keys.get(
-                supersedes
-            )
-
-            if predecessor is None:
-
-                errors.append(
-                    "FI-018: supersedes "
-                    "does not resolve: "
-                    f"{key_id} -> "
-                    f"{supersedes}"
-                )
-
-            elif (
-                predecessor.get(
-                    "superseded_by"
-                )
-                != key_id
-            ):
-
-                errors.append(
-                    "FI-018: reverse rotation "
-                    "link is missing: "
-                    f"{key_id}"
-                )
-
-    return errors
+        .rstrip(b"=")
+        .decode("ascii")
+    )
 
 
 def load_verification_keys() -> tuple[
@@ -504,47 +359,14 @@ def load_verification_keys() -> tuple[
     list[str],
 ]:
 
-    registry_doc = load_yaml(
+    document = load_yaml(
         KEY_REGISTRY_PATH
     )
 
-    errors: list[str] = []
-
-    schema = load_json(
-        SCHEMA_FILES[
-            "verification-key-registry"
-        ]
+    errors = schema_errors(
+        "verification-key-registry",
+        document,
     )
-
-    validator = (
-        Draft202012Validator(
-            schema,
-            registry=SCHEMA_REGISTRY,
-            format_checker=FormatChecker(),
-        )
-    )
-
-    schema_errors_found = sorted(
-        validator.iter_errors(
-            registry_doc
-        ),
-        key=lambda error:
-            list(error.path),
-    )
-
-    for error in schema_errors_found:
-
-        where = ".".join(
-            str(part)
-            for part
-            in error.path
-        ) or "<root>"
-
-        errors.append(
-            "verification-key-registry "
-            f"{where}: "
-            f"{error.message}"
-        )
 
     keys: dict[
         str,
@@ -552,9 +374,17 @@ def load_verification_keys() -> tuple[
     ] = {}
 
     if errors:
-        return keys, errors
 
-    for item in registry_doc[
+        return (
+            keys,
+            [
+                "verification-key-registry "
+                + error
+                for error in errors
+            ],
+        )
+
+    for item in document[
         "keys"
     ]:
 
@@ -576,14 +406,98 @@ def load_verification_keys() -> tuple[
                 key_id
             ] = item
 
-    errors.extend(
-        verification_key_registry_errors(
-            registry_doc,
-            keys,
-        )
-    )
+    for key_id, item in (
+        keys.items()
+    ):
 
-    return keys, errors
+        valid_from = parse_datetime(
+            item[
+                "valid_from"
+            ]
+        )
+
+        if "valid_until" in item:
+
+            if (
+                parse_datetime(
+                    item[
+                        "valid_until"
+                    ]
+                )
+                <= valid_from
+            ):
+
+                errors.append(
+                    "FI-018: valid_until "
+                    "MUST be later than "
+                    "valid_from: "
+                    f"{key_id}"
+                )
+
+        if "revoked_at" in item:
+
+            if (
+                parse_datetime(
+                    item[
+                        "revoked_at"
+                    ]
+                )
+                <= valid_from
+            ):
+
+                errors.append(
+                    "FI-018: revoked_at "
+                    "MUST be later than "
+                    "valid_from: "
+                    f"{key_id}"
+                )
+
+        successor_id = item.get(
+            "superseded_by"
+        )
+
+        if successor_id:
+
+            successor = keys.get(
+                successor_id
+            )
+
+            if successor is None:
+
+                errors.append(
+                    "FI-018: superseded_by "
+                    "does not resolve: "
+                    f"{key_id} -> "
+                    f"{successor_id}"
+                )
+
+            elif (
+                successor[
+                    "controller_id"
+                ]
+                != item[
+                    "controller_id"
+                ]
+            ):
+
+                errors.append(
+                    "FI-018: rotated keys "
+                    "MUST share controller_id: "
+                    f"{key_id}"
+                )
+
+            if "valid_until" not in item:
+
+                errors.append(
+                    "FI-018: superseded key "
+                    "MUST declare valid_until: "
+                    f"{key_id}"
+                )
+
+    return (
+        keys,
+        errors,
+    )
 
 
 def signature_errors(
@@ -665,59 +579,38 @@ def signature_errors(
             "precedes key.valid_from"
         )
 
-    valid_until_raw = (
-        key_record.get(
-            "valid_until"
-        )
-    )
+    if "valid_until" in key_record:
 
-    if valid_until_raw is not None:
-
-        valid_until = parse_datetime(
-            valid_until_raw
-        )
-
-        if signed_at >= valid_until:
+        if (
+            signed_at
+            >= parse_datetime(
+                key_record[
+                    "valid_until"
+                ]
+            )
+        ):
 
             errors.append(
                 "FI-016: key was no longer "
                 "valid at signature.signed_at"
             )
 
-    revoked_raw = key_record.get(
-        "revoked_at"
-    )
+    if "revoked_at" in key_record:
 
-    if revoked_raw is not None:
-
-        revoked_at = parse_datetime(
-            revoked_raw
-        )
-
-        if signed_at >= revoked_at:
+        if (
+            signed_at
+            >= parse_datetime(
+                key_record[
+                    "revoked_at"
+                ]
+            )
+        ):
 
             errors.append(
                 "FI-017: key was revoked "
                 "at or before "
                 "signature.signed_at"
             )
-
-    try:
-
-        payload = signature_payload(
-            record
-        )
-
-    except Exception as exc:
-
-        errors.append(
-            "FI-013: record could not be "
-            "canonicalized using "
-            "JCS-RFC8785: "
-            f"{exc}"
-        )
-
-        return errors
 
     try:
 
@@ -731,13 +624,6 @@ def signature_errors(
             )
         )
 
-        public_key = (
-            Ed25519PublicKey
-            .from_public_bytes(
-                public_bytes
-            )
-        )
-
         signature_bytes = (
             b64url_decode(
                 signature[
@@ -746,9 +632,18 @@ def signature_errors(
             )
         )
 
+        public_key = (
+            Ed25519PublicKey
+            .from_public_bytes(
+                public_bytes
+            )
+        )
+
         public_key.verify(
             signature_bytes,
-            payload,
+            signature_payload(
+                record
+            ),
         )
 
     except (
@@ -770,9 +665,11 @@ def record_time_errors(
     record: dict[str, Any],
 ) -> list[str]:
 
-    field = RECORD_TIME_FIELDS[
-        record_type
-    ]
+    field = (
+        RECORD_TIME_FIELDS[
+            record_type
+        ]
+    )
 
     record_time = parse_datetime(
         record[
@@ -798,7 +695,7 @@ def record_time_errors(
     return []
 
 
-def semantic_errors(
+def core_semantic_errors(
     record_type: str,
     record: dict[str, Any],
     *,
@@ -852,8 +749,7 @@ def semantic_errors(
 
             errors.append(
                 "FI-003: trace origin_id "
-                "does not match "
-                "flow origin_id"
+                "does not match flow origin_id"
             )
 
         if (
@@ -1082,6 +978,7 @@ def semantic_errors(
                     ]
                     == "custom"
                 ):
+
                     continue
 
                 candidate = (
@@ -1211,6 +1108,184 @@ def semantic_errors(
     return errors
 
 
+def observation_semantic_errors(
+    observation: dict[str, Any],
+    *,
+    targets:
+        dict[
+            tuple[str, str],
+            dict[str, Any],
+        ],
+    verification_keys:
+        dict[str, dict[str, Any]],
+) -> list[str]:
+
+    errors = signature_errors(
+        observation,
+        verification_keys,
+    )
+
+    errors.extend(
+        record_time_errors(
+            "observation-receipt",
+            observation,
+        )
+    )
+
+    if (
+        observation[
+            "signature"
+        ][
+            "signer_id"
+        ]
+        != observation[
+            "observer_id"
+        ]
+    ):
+
+        errors.append(
+            "FI-023: ObservationReceipt "
+            "signer_id MUST equal observer_id"
+        )
+
+    target_key = (
+        observation[
+            "target_record_type"
+        ],
+        observation[
+            "target_record_id"
+        ],
+    )
+
+    target = targets.get(
+        target_key
+    )
+
+    if target is None:
+
+        errors.append(
+            "FI-020: ObservationReceipt "
+            "target does not resolve"
+        )
+
+        return errors
+
+    if (
+        observation[
+            "observer_id"
+        ]
+        == target[
+            "signature"
+        ][
+            "signer_id"
+        ]
+    ):
+
+        errors.append(
+            "FI-023: observer_id "
+            "MUST be independent "
+            "from target signer_id"
+        )
+
+    expected_digest = (
+        record_digest(
+            target
+        )
+    )
+
+    if (
+        observation[
+            "target_digest"
+        ]
+        != expected_digest
+    ):
+
+        errors.append(
+            "FI-021: target_digest "
+            "does not match the "
+            "canonical signed target record"
+        )
+
+    observed_at = parse_datetime(
+        observation[
+            "observed_at"
+        ]
+    )
+
+    target_signed_at = parse_datetime(
+        target[
+            "signature"
+        ][
+            "signed_at"
+        ]
+    )
+
+    if (
+        observed_at
+        < target_signed_at
+    ):
+
+        errors.append(
+            "FI-022: observed_at "
+            "MUST NOT precede target "
+            "signature.signed_at"
+        )
+
+    target_key_record = (
+        verification_keys.get(
+            target[
+                "signature"
+            ][
+                "key_id"
+            ]
+        )
+    )
+
+    if target_key_record is not None:
+
+        if (
+            "valid_until"
+            in target_key_record
+        ):
+
+            if (
+                observed_at
+                >= parse_datetime(
+                    target_key_record[
+                        "valid_until"
+                    ]
+                )
+            ):
+
+                errors.append(
+                    "FI-024: target was not "
+                    "observed before "
+                    "key.valid_until"
+                )
+
+        if (
+            "revoked_at"
+            in target_key_record
+        ):
+
+            if (
+                observed_at
+                >= parse_datetime(
+                    target_key_record[
+                        "revoked_at"
+                    ]
+                )
+            ):
+
+                errors.append(
+                    "FI-024: target was not "
+                    "observed before "
+                    "key.revoked_at"
+                )
+
+    return errors
+
+
 def build_context():
 
     traces: dict[
@@ -1233,6 +1308,11 @@ def build_context():
         dict[str, Any],
     ] = {}
 
+    targets: dict[
+        tuple[str, str],
+        dict[str, Any],
+    ] = {}
+
     for directory in (
         PASS_DIR,
         SUPPORT_DIR,
@@ -1252,6 +1332,26 @@ def build_context():
                 path,
                 record,
             )
+
+            if (
+                kind
+                == "observation-receipt"
+            ):
+
+                continue
+
+            if kind in RECORD_ID_FIELDS:
+
+                targets[
+                    (
+                        kind,
+                        record[
+                            RECORD_ID_FIELDS[
+                                kind
+                            ]
+                        ],
+                    )
+                ] = record
 
             if kind == "trace-record":
 
@@ -1290,13 +1390,39 @@ def build_context():
         audits,
         flow_requests,
         flow_receipts,
+        targets,
     )
 
 
-def validate_directory(
-    directory: Path,
+def load_support_observations() -> list[
+    tuple[
+        Path,
+        dict[str, Any],
+    ]
+]:
+
+    result = []
+
+    for path in sorted(
+        SUPPORT_DIR.glob(
+            "observation-*.yaml"
+        )
+    ):
+
+        result.append(
+            (
+                path,
+                load_yaml(
+                    path
+                ),
+            )
+        )
+
+    return result
+
+
+def validate_pass_core(
     *,
-    expect_failure: bool,
     context,
     verification_keys:
         dict[str, dict[str, Any]],
@@ -1307,22 +1433,17 @@ def validate_directory(
         audits,
         flow_requests,
         flow_receipts,
+        _,
     ) = context
 
     ok = True
 
-    label = (
-        "fail examples: failure expected"
-        if expect_failure
-        else "pass examples"
-    )
-
     print(
-        f"\n[{label}]"
+        "\n[pass examples]"
     )
 
     for path in sorted(
-        directory.glob(
+        PASS_DIR.glob(
             "*.yaml"
         )
     ):
@@ -1348,28 +1469,13 @@ def validate_directory(
 
         if s_errors:
 
-            if expect_failure:
-
-                print(
-                    "  "
-                    "[expected-schema-failure]"
-                )
-
-                for error in s_errors:
-
-                    print(
-                        f"    - {error}"
-                    )
-
-                continue
-
             ok = False
 
             for error in s_errors:
 
                 print(
-                    "  "
-                    f"[schema-error] {error}"
+                    f"  [schema-error] "
+                    f"{error}"
                 )
 
             continue
@@ -1378,33 +1484,22 @@ def validate_directory(
             "  [schema-ok]"
         )
 
-        m_errors = semantic_errors(
-            kind,
-            record,
-            traces=traces,
-            audits=audits,
-            flow_requests=flow_requests,
-            flow_receipts=flow_receipts,
-            verification_keys=
-                verification_keys,
+        m_errors = (
+            core_semantic_errors(
+                kind,
+                record,
+                traces=traces,
+                audits=audits,
+                flow_requests=
+                    flow_requests,
+                flow_receipts=
+                    flow_receipts,
+                verification_keys=
+                    verification_keys,
+            )
         )
 
         if m_errors:
-
-            if expect_failure:
-
-                print(
-                    "  "
-                    "[expected-semantic-failure]"
-                )
-
-                for error in m_errors:
-
-                    print(
-                        f"    - {error}"
-                    )
-
-                continue
 
             ok = False
 
@@ -1412,19 +1507,9 @@ def validate_directory(
 
                 print(
                     "  "
-                    f"[semantic-error] {error}"
+                    f"[semantic-error] "
+                    f"{error}"
                 )
-
-            continue
-
-        if expect_failure:
-
-            ok = False
-
-            print(
-                "  [unexpected-pass] "
-                "fail fixture did not fail"
-            )
 
         else:
 
@@ -1435,11 +1520,283 @@ def validate_directory(
     return ok
 
 
+def validate_temporal_evidence(
+    *,
+    context,
+    verification_keys:
+        dict[str, dict[str, Any]],
+) -> bool:
+
+    (
+        _,
+        _,
+        _,
+        _,
+        targets,
+    ) = context
+
+    observations = (
+        load_support_observations()
+    )
+
+    valid_targets: set[
+        tuple[str, str]
+    ] = set()
+
+    ok = True
+
+    print(
+        "\n[temporal evidence]"
+    )
+
+    for (
+        path,
+        observation,
+    ) in observations:
+
+        print(
+            f"- {path.relative_to(ROOT)} "
+            "[observation-receipt]"
+        )
+
+        s_errors = schema_errors(
+            "observation-receipt",
+            observation,
+        )
+
+        if s_errors:
+
+            ok = False
+
+            for error in s_errors:
+
+                print(
+                    f"  [schema-error] "
+                    f"{error}"
+                )
+
+            continue
+
+        print(
+            "  [schema-ok]"
+        )
+
+        m_errors = (
+            observation_semantic_errors(
+                observation,
+                targets=targets,
+                verification_keys=
+                    verification_keys,
+            )
+        )
+
+        if m_errors:
+
+            ok = False
+
+            for error in m_errors:
+
+                print(
+                    "  "
+                    f"[semantic-error] "
+                    f"{error}"
+                )
+
+        else:
+
+            print(
+                "  [semantic-ok]"
+            )
+
+            valid_targets.add(
+                (
+                    observation[
+                        "target_record_type"
+                    ],
+                    observation[
+                        "target_record_id"
+                    ],
+                )
+            )
+
+    for path in sorted(
+        PASS_DIR.glob(
+            "*.yaml"
+        )
+    ):
+
+        record = load_yaml(
+            path
+        )
+
+        kind = record_type_for(
+            path,
+            record,
+        )
+
+        target_key = (
+            kind,
+            record[
+                RECORD_ID_FIELDS[
+                    kind
+                ]
+            ],
+        )
+
+        if (
+            target_key
+            not in valid_targets
+        ):
+
+            ok = False
+
+            print(
+                "  "
+                "[temporal-evidence-error] "
+                "FI-020: no valid "
+                "ObservationReceipt for "
+                f"{kind}:"
+                f"{target_key[1]}"
+            )
+
+    if ok:
+
+        print(
+            "  "
+            "[temporal-evidence-complete]"
+        )
+
+    return ok
+
+
+def validate_fail_examples(
+    *,
+    context,
+    verification_keys:
+        dict[str, dict[str, Any]],
+) -> bool:
+
+    (
+        traces,
+        audits,
+        flow_requests,
+        flow_receipts,
+        targets,
+    ) = context
+
+    ok = True
+
+    print(
+        "\n[fail examples: "
+        "failure expected]"
+    )
+
+    for path in sorted(
+        FAIL_DIR.glob(
+            "*.yaml"
+        )
+    ):
+
+        record = load_yaml(
+            path
+        )
+
+        kind = record_type_for(
+            path,
+            record,
+        )
+
+        print(
+            f"- {path.relative_to(ROOT)} "
+            f"[{kind}]"
+        )
+
+        s_errors = schema_errors(
+            kind,
+            record,
+        )
+
+        if s_errors:
+
+            print(
+                "  "
+                "[expected-schema-failure]"
+            )
+
+            for error in s_errors:
+
+                print(
+                    f"    - {error}"
+                )
+
+            continue
+
+        print(
+            "  [schema-ok]"
+        )
+
+        if (
+            kind
+            == "observation-receipt"
+        ):
+
+            m_errors = (
+                observation_semantic_errors(
+                    record,
+                    targets=targets,
+                    verification_keys=
+                        verification_keys,
+                )
+            )
+
+        else:
+
+            m_errors = (
+                core_semantic_errors(
+                    kind,
+                    record,
+                    traces=traces,
+                    audits=audits,
+                    flow_requests=
+                        flow_requests,
+                    flow_receipts=
+                        flow_receipts,
+                    verification_keys=
+                        verification_keys,
+                )
+            )
+
+        if m_errors:
+
+            print(
+                "  "
+                "[expected-semantic-failure]"
+            )
+
+            for error in m_errors:
+
+                print(
+                    f"    - {error}"
+                )
+
+        else:
+
+            ok = False
+
+            print(
+                "  "
+                "[unexpected-pass] "
+                "fail fixture did not fail"
+            )
+
+    return ok
+
+
 def main() -> int:
 
     print(
         "=== Royalty Flow Interface "
-        "Protocol v0.4 Validation ==="
+        "Protocol v0.5 Validation ==="
     )
 
     for name, path in (
@@ -1484,17 +1841,21 @@ def main() -> int:
 
     context = build_context()
 
-    pass_ok = validate_directory(
-        PASS_DIR,
-        expect_failure=False,
+    pass_ok = validate_pass_core(
         context=context,
         verification_keys=
             verification_keys,
     )
 
-    fail_ok = validate_directory(
-        FAIL_DIR,
-        expect_failure=True,
+    temporal_ok = (
+        validate_temporal_evidence(
+            context=context,
+            verification_keys=
+                verification_keys,
+        )
+    )
+
+    fail_ok = validate_fail_examples(
         context=context,
         verification_keys=
             verification_keys,
@@ -1502,6 +1863,7 @@ def main() -> int:
 
     if (
         pass_ok
+        and temporal_ok
         and fail_ok
     ):
 
@@ -1519,6 +1881,7 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+
     sys.exit(
         main()
     )
