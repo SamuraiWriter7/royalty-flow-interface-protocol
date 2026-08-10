@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:rfip:schema:trace-record:0.3.0",
+  "$id": "urn:rfip:schema:trace-record:0.4.0",
   "title": "RFIP Trace Record",
   "type": "object",
   "additionalProperties": false,
@@ -14,7 +14,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "0.3.0"
+      "const": "0.4.0"
     },
     "trace_id": {
       "type": "string",
@@ -55,7 +55,7 @@
       "format": "date-time"
     },
     "signature": {
-      "$ref": "urn:rfip:schema:signature-envelope:0.3.0"
+      "$ref": "urn:rfip:schema:signature-envelope:0.4.0"
     }
   }
 }
