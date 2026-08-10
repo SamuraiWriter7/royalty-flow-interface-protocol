@@ -1,5 +1,17 @@
-schema_version: "0.1.0"
+schema_version: "0.2.0"
+
 flow_id: "flow-001"
 flow_request_id: "flow-request-001"
+
 status: "accepted"
 received_at: "2026-08-10T00:00:01Z"
+
+signature:
+  algorithm: "Ed25519"
+  key_id: "did:example:flow-port-alpha#key-1"
+  signer_id: "flow-port-alpha"
+  canonicalization: "JCS-RFC8785"
+  scope: "record-without-signature"
+  encoding: "base64url"
+  signed_at: "2026-08-10T00:00:00Z"
+  value: "c2lnX2Zsb3dfcmVjZWlwdA"
