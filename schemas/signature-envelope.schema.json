@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:rfip:schema:signature-envelope:0.2.0",
+  "title": "RFIP Signature Envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "algorithm",
+    "key_id",
+    "signer_id",
+    "canonicalization",
+    "scope",
+    "encoding",
+    "signed_at",
+    "value"
+  ],
+  "properties": {
+    "algorithm": {
+      "type": "string",
+      "enum": [
+        "Ed25519",
+        "ES256",
+        "CUSTOM"
+      ]
+    },
+    "key_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "signer_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "canonicalization": {
+      "const": "JCS-RFC8785"
+    },
+    "scope": {
+      "const": "record-without-signature"
+    },
+    "encoding": {
+      "const": "base64url"
+    },
+    "signed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "value": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 8
+    }
+  }
+}
