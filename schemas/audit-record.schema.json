@@ -17,7 +17,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "0.3.0"
+      "const": "0.4.0"
     },
     "audit_id": {
       "type": "string",
@@ -56,7 +56,7 @@
       "format": "date-time"
     },
     "signature": {
-      "$ref": "urn:rfip:schema:signature-envelope:0.3.0"
+      "$ref": "urn:rfip:schema:signature-envelope:0.4.0"
     }
   }
 }
