@@ -1,0 +1,20 @@
+schema_version: "0.4.0"
+
+trace_id: "trace-old-key-after-rotation"
+origin_id: "origin-001"
+
+route:
+  - node_type: "origin"
+    node_id: "origin-001"
+
+created_at: "2026-08-10T00:00:00Z"
+
+signature:
+  algorithm: "Ed25519"
+  key_id: "did:example:trace-registry-alpha#key-1"
+  signer_id: "trace-registry-alpha"
+  canonicalization: "JCS-RFC8785"
+  scope: "record-without-signature-value"
+  encoding: "base64url"
+  signed_at: "2026-08-10T00:00:00Z"
+  value: "5kmFjdpB0-2t5zvIW70LdCw9F4ZkoZmtIGiQvOZwxJRJhLXikFHRXSMsPJ3n7YYq48eNFuG_mP661-ox9bpiAw"
