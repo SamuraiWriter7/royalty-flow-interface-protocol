@@ -1,0 +1,24 @@
+schema_version: "0.5.0"
+
+observation_id: "observation-trace-record-001"
+observer_id: "observer-alpha"
+
+target_record_type: "trace-record"
+target_record_id: "trace-001"
+
+target_digest: "h0wUf132HXmRaNuFzgNY7e_SaQzOHvYV3Bk8tR9s8sw"
+
+digest_algorithm: "SHA-256"
+canonicalization: "JCS-RFC8785"
+
+observed_at: "2026-08-10T00:00:00.600000Z"
+
+signature:
+  algorithm: "Ed25519"
+  key_id: "did:example:observer-alpha#key-1"
+  signer_id: "observer-alpha"
+  canonicalization: "JCS-RFC8785"
+  scope: "record-without-signature-value"
+  encoding: "base64url"
+  signed_at: "2026-08-10T00:00:00.600000Z"
+  value: "Db83d72kPMjs1He_-tTw_Elk8z5gm46avdWI0I2zsFa3iXZYbpyyX1QxjB_mj4okyA-2wSA33rS-mUAu3vuwBg"
