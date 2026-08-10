@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:rfip:schema:settlement-receipt:0.1.0",
+  "$id": "urn:rfip:schema:settlement-receipt:0.2.0",
   "title": "RFIP Settlement Receipt",
   "type": "object",
   "additionalProperties": false,
@@ -16,11 +16,11 @@
     "route",
     "distribution",
     "settled_at",
-    "final_signature"
+    "signature"
   ],
   "properties": {
     "schema_version": {
-      "const": "0.1.0"
+      "const": "0.2.0"
     },
     "settlement_id": {
       "type": "string",
@@ -46,35 +46,7 @@
       "const": "settled"
     },
     "settled_value": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "unit",
-        "amount"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "currency",
-            "credit",
-            "point",
-            "token",
-            "usage_unit",
-            "compute_unit",
-            "custom"
-          ]
-        },
-        "unit": {
-          "type": "string",
-          "minLength": 1
-        },
-        "amount": {
-          "type": "number",
-          "exclusiveMinimum": 0
-        }
-      }
+      "$ref": "urn:rfip:schema:value:0.2.0"
     },
     "route": {
       "type": "array",
@@ -138,9 +110,8 @@
       "type": "string",
       "format": "date-time"
     },
-    "final_signature": {
-      "type": "string",
-      "minLength": 1
+    "signature": {
+      "$ref": "urn:rfip:schema:signature-envelope:0.2.0"
     }
   }
 }
