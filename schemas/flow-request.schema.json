@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:rfip:schema:flow-request:0.1.0",
+  "$id": "urn:rfip:schema:flow-request:0.2.0",
   "title": "RFIP Flow Request",
   "type": "object",
   "additionalProperties": false,
@@ -16,7 +16,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "0.1.0"
+      "const": "0.2.0"
     },
     "flow_request_id": {
       "type": "string",
@@ -35,43 +35,14 @@
       "minLength": 1
     },
     "value": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "unit",
-        "amount"
-      ],
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "currency",
-            "credit",
-            "point",
-            "token",
-            "usage_unit",
-            "compute_unit",
-            "custom"
-          ]
-        },
-        "unit": {
-          "type": "string",
-          "minLength": 1
-        },
-        "amount": {
-          "type": "number",
-          "exclusiveMinimum": 0
-        }
-      }
+      "$ref": "urn:rfip:schema:value:0.2.0"
     },
     "occurred_at": {
       "type": "string",
       "format": "date-time"
     },
     "signature": {
-      "type": "string",
-      "minLength": 1
+      "$ref": "urn:rfip:schema:signature-envelope:0.2.0"
     }
   }
 }
