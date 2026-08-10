@@ -1,4 +1,4 @@
-schema_version: "0.3.0"
+schema_version: "0.4.0"
 
 settlement_id: "settlement-001"
 flow_id: "flow-001"
@@ -44,4 +44,4 @@ signature:
   scope: "record-without-signature-value"
   encoding: "base64url"
   signed_at: "2026-08-10T00:00:03Z"
-  value: "BbcKm5Q_VyDHU8pWrkNU0z047JhPBIOaRMfZbDfV4oNDLbl5xP7b5JKl5fsxZWHa8i25HYcrIdugqj3jWCwtDg"
+  value: "hSvq46qxQTxZyurMi5iEfabQd_JFGcL7JgaFPgWRURsyQCMe2PizNbl5y4--XWKJCK7C66RG3hu3OLxIj1lWAQ"
