@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:rfip:schema:audit-record:0.1.0",
+  "$id": "urn:rfip:schema:audit-record:0.2.0",
   "title": "RFIP Audit Record",
   "type": "object",
   "additionalProperties": false,
@@ -17,7 +17,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "0.1.0"
+      "const": "0.2.0"
     },
     "audit_id": {
       "type": "string",
@@ -56,8 +56,7 @@
       "format": "date-time"
     },
     "signature": {
-      "type": "string",
-      "minLength": 1
+      "$ref": "urn:rfip:schema:signature-envelope:0.2.0"
     }
   }
 }
