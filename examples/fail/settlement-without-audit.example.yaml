@@ -1,0 +1,22 @@
+schema_version: "0.1.0"
+settlement_id: "settlement-without-audit"
+flow_id: "flow-001"
+origin_id: "origin-001"
+trace_id: "trace-001"
+audit_id: "audit-missing"
+status: "settled"
+settled_value:
+  type: "currency"
+  unit: "JPY"
+  amount: 1000
+route:
+  - node_type: "actor"
+    node_id: "actor-platform-alpha"
+  - node_type: "origin"
+    node_id: "origin-001"
+distribution:
+  - recipient_type: "origin"
+    recipient_id: "origin-001"
+    amount: 1000
+settled_at: "2026-08-10T00:00:03Z"
+final_signature: "opaque-signature-settlement-no-audit"
