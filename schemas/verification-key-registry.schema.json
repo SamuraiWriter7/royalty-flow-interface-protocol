@@ -1,16 +1,26 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:rfip:schema:verification-key-registry:0.3.0",
+  "$id": "urn:rfip:schema:verification-key-registry:0.4.0",
   "title": "RFIP Verification Key Registry",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "schema_version",
+    "registry_id",
+    "generated_at",
     "keys"
   ],
   "properties": {
     "schema_version": {
-      "const": "0.3.0"
+      "const": "0.4.0"
+    },
+    "registry_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
     },
     "keys": {
       "type": "array",
@@ -22,7 +32,8 @@
           "key_id",
           "controller_id",
           "algorithm",
-          "public_key_jwk"
+          "public_key_jwk",
+          "valid_from"
         ],
         "properties": {
           "key_id": {
@@ -56,8 +67,52 @@
                 "pattern": "^[A-Za-z0-9_-]{43}$"
               }
             }
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revoked_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revocation_reason": {
+            "type": "string",
+            "enum": [
+              "compromised",
+              "suspected_compromise",
+              "administrative",
+              "superseded",
+              "other"
+            ]
+          },
+          "superseded_by": {
+            "type": "string",
+            "minLength": 1
+          },
+          "supersedes": {
+            "type": "string",
+            "minLength": 1
           }
-        }
+        },
+        "allOf": [
+          {
+            "if": {
+              "required": [
+                "revoked_at"
+              ]
+            },
+            "then": {
+              "required": [
+                "revocation_reason"
+              ]
+            }
+          }
+        ]
       }
     }
   }
