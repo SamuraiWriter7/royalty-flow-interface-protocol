@@ -1,4 +1,4 @@
-schema_version: "0.4.0"
+schema_version: "0.5.0"
 
 registry_id: "rfip-example-verification-key-registry"
 
@@ -12,7 +12,7 @@ keys:
     public_key_jwk:
       kty: "OKP"
       crv: "Ed25519"
-      x: "9beVfnUBmtoQQ_Z0P41rWyJ4R5xf3N-5F0rBDEaGTXw"
+      x: "vJNEOEYEnwWosOOkm3e9kD1atmOotlEjRsTwt-Xhod0"
     valid_from: "2026-08-01T00:00:00Z"
 
   - key_id: "did:example:flow-port-alpha#key-1"
@@ -21,7 +21,7 @@ keys:
     public_key_jwk:
       kty: "OKP"
       crv: "Ed25519"
-      x: "RBEQ-n0U3nlPeQERZKkgg42Z5VkXjUEN15lzpUlC6_c"
+      x: "d_KTUehA3Cz9d2kQ9I_qhLeHGZn1q6i3xioyk0L3Bt8"
     valid_from: "2026-08-01T00:00:00Z"
 
   - key_id: "did:example:trace-registry-alpha#key-1"
@@ -30,20 +30,8 @@ keys:
     public_key_jwk:
       kty: "OKP"
       crv: "Ed25519"
-      x: "tmPIDmxV3t2L4Vtn01gYWAdF4u_azzoj-KArOC6ApM8"
-    valid_from: "2026-07-01T00:00:00Z"
-    valid_until: "2026-08-09T00:00:00Z"
-    superseded_by: "did:example:trace-registry-alpha#key-2"
-
-  - key_id: "did:example:trace-registry-alpha#key-2"
-    controller_id: "trace-registry-alpha"
-    algorithm: "Ed25519"
-    public_key_jwk:
-      kty: "OKP"
-      crv: "Ed25519"
-      x: "9-IvqS0_vCHNp_ftF8kO6VYJQCHlkZvBR3ox9bIrD8Y"
-    valid_from: "2026-08-09T00:00:00Z"
-    supersedes: "did:example:trace-registry-alpha#key-1"
+      x: "rZHAn7IIiCZCMjCqs6JkPUSsktUjUZC3QzreJsQDD2o"
+    valid_from: "2026-08-01T00:00:00Z"
 
   - key_id: "did:example:auditor-alpha#key-1"
     controller_id: "auditor-alpha"
@@ -51,7 +39,7 @@ keys:
     public_key_jwk:
       kty: "OKP"
       crv: "Ed25519"
-      x: "HnRnwnutA9vfTpqZaZs341bhkMSCOxih05quz2PqLz8"
+      x: "TevuUFsZw4KERB8uNoQO7mbRxR7nUy3Mc2XfL8t4CKE"
     valid_from: "2026-08-01T00:00:00Z"
 
   - key_id: "did:example:settlement-agent-alpha#key-1"
@@ -60,7 +48,16 @@ keys:
     public_key_jwk:
       kty: "OKP"
       crv: "Ed25519"
-      x: "kne1jdVNzWKXD82bW9MWFgpUFdIoDDO-3TKtCkqjnbA"
+      x: "fwfFBkKlmbpAKJobViajQ6oASx450fV3pzmlJrREVGE"
+    valid_from: "2026-08-01T00:00:00Z"
+
+  - key_id: "did:example:observer-alpha#key-1"
+    controller_id: "observer-alpha"
+    algorithm: "Ed25519"
+    public_key_jwk:
+      kty: "OKP"
+      crv: "Ed25519"
+      x: "GIe4CJpepdM__ApG6q3QbTR-6YE41-aTbyeXVP8AHeM"
     valid_from: "2026-08-01T00:00:00Z"
 
   - key_id: "did:example:actor-revoked#key-1"
@@ -69,9 +66,9 @@ keys:
     public_key_jwk:
       kty: "OKP"
       crv: "Ed25519"
-      x: "IDhpt_qxfuO0Sf-KkQPRODSS2WlzIkwE5dVoVBmEnBk"
+      x: "98vhYMqQK8AsRJosA-6-BOFP3Euubz_Pn7UoV57tvmw"
     valid_from: "2026-07-01T00:00:00Z"
-    revoked_at: "2026-08-05T00:00:00Z"
+    revoked_at: "2026-08-10T00:00:05Z"
     revocation_reason: "compromised"
 
   - key_id: "did:example:actor-expired#key-1"
@@ -80,9 +77,9 @@ keys:
     public_key_jwk:
       kty: "OKP"
       crv: "Ed25519"
-      x: "1RlcT6yr6r-Xxcd1jeExsdE2_aZ4IK4mfCVM7eLZCgM"
+      x: "3k0wys2wx7776K9zdl0-UBTmIcRHkUb0b1SMv4Le2Pk"
     valid_from: "2026-07-01T00:00:00Z"
-    valid_until: "2026-08-05T00:00:00Z"
+    valid_until: "2026-08-10T00:00:05Z"
 
   - key_id: "did:example:actor-future#key-1"
     controller_id: "actor-future"
@@ -90,5 +87,5 @@ keys:
     public_key_jwk:
       kty: "OKP"
       crv: "Ed25519"
-      x: "RGl6KKoq91GTfQY74cJljYXaG3BiFMnFIKYd_yd_W0U"
+      x: "lz5w5Inp5KkToPkSeDjzAf6wAYk0tXzhSqjIdD_VyT8"
     valid_from: "2026-08-11T00:00:00Z"
