@@ -1,0 +1,24 @@
+schema_version: "0.5.0"
+
+observation_id: "observation-flow-request-001"
+observer_id: "observer-alpha"
+
+target_record_type: "flow-request"
+target_record_id: "flow-request-001"
+
+target_digest: "dH1VlFyRhF0fmhX7flHfVL8BR7EA1ezS8eniDfgtq98"
+
+digest_algorithm: "SHA-256"
+canonicalization: "JCS-RFC8785"
+
+observed_at: "2026-08-10T00:00:00.500000Z"
+
+signature:
+  algorithm: "Ed25519"
+  key_id: "did:example:observer-alpha#key-1"
+  signer_id: "observer-alpha"
+  canonicalization: "JCS-RFC8785"
+  scope: "record-without-signature-value"
+  encoding: "base64url"
+  signed_at: "2026-08-10T00:00:00.500000Z"
+  value: "r3f75MVG4CR2RcwSNAo18CkLdSqTu5KSEtdvKeBoVg_V3tdowKjfertGQ6vhTV9X352tjdUgkZg308wayn9zDA"
