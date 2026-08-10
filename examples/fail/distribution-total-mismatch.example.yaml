@@ -1,3 +1,30 @@
+schema_version: "0.2.0"
+
+settlement_id: "settlement-distribution-mismatch"
+flow_id: "flow-001"
+
+origin_id: "origin-001"
+trace_id: "trace-001"
+audit_id: "audit-001"
+
+status: "settled"
+
+settled_value:
+  type: "currency"
+  unit_namespace: "iso4217"
+  unit: "JPY"
+  amount: 1000
+
+route:
+  - node_type: "actor"
+    node_id: "actor-platform-alpha"
+
+  - node_type: "derivative"
+    node_id: "derivative-001"
+
+  - node_type: "origin"
+    node_id: "origin-001"
+
 distribution:
   - recipient_type: "derivative"
     recipient_id: "derivative-001"
@@ -6,3 +33,15 @@ distribution:
   - recipient_type: "origin"
     recipient_id: "origin-001"
     amount: 100
+
+settled_at: "2026-08-10T00:00:03Z"
+
+signature:
+  algorithm: "Ed25519"
+  key_id: "did:example:settlement-agent-alpha#key-1"
+  signer_id: "settlement-agent-alpha"
+  canonicalization: "JCS-RFC8785"
+  scope: "record-without-signature"
+  encoding: "base64url"
+  signed_at: "2026-08-10T00:00:03Z"
+  value: "c2lnX2Rpc3RyaWJ1dGlvbl9taXNtYXRjaA"
