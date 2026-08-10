@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:rfip:schema:settlement-receipt:0.1.0",
+  "title": "RFIP Settlement Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "settlement_id",
+    "flow_id",
+    "origin_id",
+    "trace_id",
+    "audit_id",
+    "status",
+    "settled_value",
+    "route",
+    "distribution",
+    "settled_at",
+    "final_signature"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1.0"
+    },
+    "settlement_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "flow_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "origin_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "audit_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "const": "settled"
+    },
+    "settled_value": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "unit",
+        "amount"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "currency",
+            "credit",
+            "point",
+            "token",
+            "usage_unit",
+            "compute_unit",
+            "custom"
+          ]
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "amount": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "route": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "node_type",
+          "node_id"
+        ],
+        "properties": {
+          "node_type": {
+            "type": "string",
+            "enum": [
+              "origin",
+              "derivative",
+              "actor"
+            ]
+          },
+          "node_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "distribution": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "recipient_type",
+          "recipient_id",
+          "amount"
+        ],
+        "properties": {
+          "recipient_type": {
+            "type": "string",
+            "enum": [
+              "origin",
+              "derivative",
+              "actor",
+              "custom"
+            ]
+          },
+          "recipient_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "settled_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "final_signature": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
