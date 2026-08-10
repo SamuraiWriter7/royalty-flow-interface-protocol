@@ -1,4 +1,4 @@
-schema_version: "0.2.0"
+schema_version: "0.3.0"
 
 trace_id: "trace-001"
 origin_id: "origin-001"
@@ -20,7 +20,7 @@ signature:
   key_id: "did:example:trace-registry-alpha#key-1"
   signer_id: "trace-registry-alpha"
   canonicalization: "JCS-RFC8785"
-  scope: "record-without-signature"
+  scope: "record-without-signature-value"
   encoding: "base64url"
   signed_at: "2026-08-10T00:00:00Z"
-  value: "c2lnX3RyYWNlX3JlY29yZA"
+  value: "1HFw38CrNNrn86aEce1mqCU0VJYuNWikYPHQfwGsBeVxAX2Tpc_o29QPbUaiR6SSlJ92tTUQ6HMGZrE3GMkmCQ"
