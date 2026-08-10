@@ -1,0 +1,89 @@
+openapi: 3.1.0
+
+info:
+  title: Royalty Flow Interface Protocol
+  version: 0.1.0
+  description: >-
+    Minimal policy-neutral interface for traceable value routing through
+    origin, trace, audit, and settlement.
+
+paths:
+  /flow/in:
+    post:
+      summary: Submit a value flow request
+      operationId: submitFlow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/flow-request.schema.json
+      responses:
+        "202":
+          description: Flow request accepted or rejected for processing
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/flow-receipt.schema.json
+
+  /flow/out/{flow_id}:
+    get:
+      summary: Read a settlement receipt for a flow
+      operationId: getFlowSettlement
+      parameters:
+        - name: flow_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Settlement receipt
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/settlement-receipt.schema.json
+        "404":
+          description: Flow not found
+        "409":
+          description: Flow exists but settlement is not complete
+
+  /trace/{trace_id}:
+    get:
+      summary: Resolve a trace by trace_id
+      operationId: getTrace
+      parameters:
+        - name: trace_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Trace record
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/trace-record.schema.json
+        "404":
+          description: Trace not found
+
+  /audit/{audit_id}:
+    get:
+      summary: Read an audit record by audit_id
+      operationId: getAudit
+      parameters:
+        - name: audit_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Audit record
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/audit-record.schema.json
+        "404":
+          description: Audit record not found
