@@ -1,4 +1,4 @@
-schema_version: "0.2.0"
+schema_version: "0.3.0"
 
 audit_id: "audit-failed-001"
 flow_id: "flow-001"
@@ -18,7 +18,7 @@ signature:
   key_id: "did:example:auditor-alpha#key-1"
   signer_id: "auditor-alpha"
   canonicalization: "JCS-RFC8785"
-  scope: "record-without-signature"
+  scope: "record-without-signature-value"
   encoding: "base64url"
-  signed_at: "2026-08-10T00:00:00Z"
-  value: "c2lnX2ZhaWxlZF9hdWRpdA"
+  signed_at: "2026-08-10T00:00:02Z"
+  value: "kPhms7sKIaAvHLcAqnf6Ke9RSfc-EWwwahy-T4A_LVveu2E4uj-FZU7uzhC25FcVIgd6PqD6kz5FgJ-b2058Bg"
