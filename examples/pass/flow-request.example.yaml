@@ -1,4 +1,4 @@
-schema_version: "0.2.0"
+schema_version: "0.3.0"
 
 flow_request_id: "flow-request-001"
 actor_id: "actor-platform-alpha"
@@ -19,7 +19,7 @@ signature:
   key_id: "did:example:actor-platform-alpha#key-1"
   signer_id: "actor-platform-alpha"
   canonicalization: "JCS-RFC8785"
-  scope: "record-without-signature"
+  scope: "record-without-signature-value"
   encoding: "base64url"
   signed_at: "2026-08-10T00:00:00Z"
-  value: "c2lnbmF0dXJlX3YwMg"
+  value: "lCjV094ESiqD603lsbByqAOe1qDXyIdbCeIfEOAMuTtlmPcsF5zJumIA16i2hzK_ALizdBN9qigeox0UJeEkAQ"
