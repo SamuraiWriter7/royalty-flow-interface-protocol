@@ -1,3 +1,5 @@
 jsonschema>=4.20,<5
 PyYAML>=6,<7
 referencing>=0.35,<1
+cryptography>=42,<47
+rfc8785>=0.1.4,<1
