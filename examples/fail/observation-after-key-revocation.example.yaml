@@ -1,0 +1,24 @@
+schema_version: "0.5.0"
+
+observation_id: "observation-after-revocation-001"
+observer_id: "observer-alpha"
+
+target_record_type: "flow-request"
+target_record_id: "flow-request-pre-revocation"
+
+target_digest: "D42U9B3Fay4a6i8TB6hna2EFJMw2WBwjGA8NhXqNvoc"
+
+digest_algorithm: "SHA-256"
+canonicalization: "JCS-RFC8785"
+
+observed_at: "2026-08-10T00:00:06Z"
+
+signature:
+  algorithm: "Ed25519"
+  key_id: "did:example:observer-alpha#key-1"
+  signer_id: "observer-alpha"
+  canonicalization: "JCS-RFC8785"
+  scope: "record-without-signature-value"
+  encoding: "base64url"
+  signed_at: "2026-08-10T00:00:06Z"
+  value: "ge_Tk43PX-UnjO-IuSDoyongQZf2Z4u0RK3AXGCrguhLj_x5HLOQoNvMmIcIpn7gZOOcNjtjq_jvz-4CysYJCg"
