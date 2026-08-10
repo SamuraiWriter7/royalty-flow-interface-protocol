@@ -1,0 +1,10 @@
+schema_version: "0.1.0"
+audit_id: "audit-failed-001"
+flow_id: "flow-001"
+origin_id: "origin-001"
+trace_id: "trace-001"
+decision: "failed"
+checks:
+  - "trace-origin-mismatch"
+audited_at: "2026-08-10T00:00:02Z"
+signature: "opaque-signature-audit-failed-001"
