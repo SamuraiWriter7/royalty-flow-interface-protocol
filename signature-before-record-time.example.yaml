@@ -1,0 +1,25 @@
+schema_version: "0.4.0"
+
+flow_request_id: "flow-request-signature-before-event"
+actor_id: "actor-platform-alpha"
+
+origin_id: "origin-001"
+trace_id: "trace-001"
+
+value:
+  type: "currency"
+  unit_namespace: "iso4217"
+  unit: "JPY"
+  amount: 1000
+
+occurred_at: "2026-08-10T00:00:10Z"
+
+signature:
+  algorithm: "Ed25519"
+  key_id: "did:example:actor-platform-alpha#key-1"
+  signer_id: "actor-platform-alpha"
+  canonicalization: "JCS-RFC8785"
+  scope: "record-without-signature-value"
+  encoding: "base64url"
+  signed_at: "2026-08-10T00:00:00Z"
+  value: "hJxSs69oFZ1khVkfZS66H1H1XCPUwC14wLnOzqiYj8eFfPdWwIguSwWldAZmemDKX1kIZNA5HPUJ6zXT9GIIAg"
