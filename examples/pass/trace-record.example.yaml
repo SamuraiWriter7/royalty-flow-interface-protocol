@@ -1,0 +1,11 @@
+schema_version: "0.1.0"
+trace_id: "trace-001"
+origin_id: "origin-001"
+route:
+  - node_type: "origin"
+    node_id: "origin-001"
+  - node_type: "derivative"
+    node_id: "derivative-001"
+  - node_type: "actor"
+    node_id: "actor-platform-alpha"
+created_at: "2026-08-10T00:00:00Z"
