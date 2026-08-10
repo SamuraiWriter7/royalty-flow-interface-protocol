@@ -1,4 +1,4 @@
-schema_version: "0.4.0"
+schema_version: "0.5.0"
 
 audit_id: "audit-001"
 flow_id: "flow-001"
@@ -26,4 +26,4 @@ signature:
   scope: "record-without-signature-value"
   encoding: "base64url"
   signed_at: "2026-08-10T00:00:02Z"
-  value: "gTdq0UzNwebmDSTVjC--HGmwCh6JwNA_CqZZSMYF-UHG-PNKXDlBxvMnHaqlpRClhH4vvtE9Ry5JbnmH3_lQCA"
+  value: "c-tHaAiqm_uzLMbX8J5FzeA7dvt3EA5MhVFIRZKckP9oBoPg9yUZK8grce8oSQYc_tsl63rc5YAxZ1oDETpOBA"
