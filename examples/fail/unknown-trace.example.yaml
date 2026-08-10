@@ -1,0 +1,11 @@
+schema_version: "0.1.0"
+flow_request_id: "flow-request-unknown-trace"
+actor_id: "actor-platform-alpha"
+origin_id: "origin-001"
+trace_id: "trace-does-not-exist"
+value:
+  type: "currency"
+  unit: "JPY"
+  amount: 1000
+occurred_at: "2026-08-10T00:00:00Z"
+signature: "opaque-signature-unknown-trace"
