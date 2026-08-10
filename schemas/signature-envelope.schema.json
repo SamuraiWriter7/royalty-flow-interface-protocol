@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:rfip:schema:signature-envelope:0.2.0",
+  "$id": "urn:rfip:schema:signature-envelope:0.3.0",
   "title": "RFIP Signature Envelope",
   "type": "object",
   "additionalProperties": false,
@@ -16,12 +16,7 @@
   ],
   "properties": {
     "algorithm": {
-      "type": "string",
-      "enum": [
-        "Ed25519",
-        "ES256",
-        "CUSTOM"
-      ]
+      "const": "Ed25519"
     },
     "key_id": {
       "type": "string",
@@ -35,7 +30,7 @@
       "const": "JCS-RFC8785"
     },
     "scope": {
-      "const": "record-without-signature"
+      "const": "record-without-signature-value"
     },
     "encoding": {
       "const": "base64url"
@@ -46,8 +41,7 @@
     },
     "value": {
       "type": "string",
-      "pattern": "^[A-Za-z0-9_-]+$",
-      "minLength": 8
+      "pattern": "^[A-Za-z0-9_-]{86}$"
     }
   }
 }
