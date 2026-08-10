@@ -1,0 +1,8 @@
+distribution:
+  - recipient_type: "derivative"
+    recipient_id: "derivative-001"
+    amount: 800
+
+  - recipient_type: "origin"
+    recipient_id: "origin-001"
+    amount: 100
