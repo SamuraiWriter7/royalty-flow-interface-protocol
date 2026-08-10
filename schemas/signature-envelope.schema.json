@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:rfip:schema:signature-envelope:0.3.0",
+  "$id": "urn:rfip:schema:signature-envelope:0.4.0",
   "title": "RFIP Signature Envelope",
   "type": "object",
   "additionalProperties": false,
