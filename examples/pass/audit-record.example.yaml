@@ -1,0 +1,13 @@
+schema_version: "0.1.0"
+audit_id: "audit-001"
+flow_id: "flow-001"
+origin_id: "origin-001"
+trace_id: "trace-001"
+decision: "passed"
+checks:
+  - "origin-reference-present"
+  - "trace-reference-present"
+  - "trace-origin-match"
+  - "flow-trace-consistency"
+audited_at: "2026-08-10T00:00:02Z"
+signature: "opaque-signature-audit-001"
