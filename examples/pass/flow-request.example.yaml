@@ -1,4 +1,4 @@
-schema_version: "0.3.0"
+schema_version: "0.4.0"
 
 flow_request_id: "flow-request-001"
 actor_id: "actor-platform-alpha"
@@ -22,4 +22,4 @@ signature:
   scope: "record-without-signature-value"
   encoding: "base64url"
   signed_at: "2026-08-10T00:00:00Z"
-  value: "lCjV094ESiqD603lsbByqAOe1qDXyIdbCeIfEOAMuTtlmPcsF5zJumIA16i2hzK_ALizdBN9qigeox0UJeEkAQ"
+  value: "6aBEObzZA0uBtIXX6J-fQa0PcMy1t1PBQxSobzPfozu7HbyaFDJiblOZ5ABBegY4f_0qfLtvCQAZ7hIGbEmtAg"
