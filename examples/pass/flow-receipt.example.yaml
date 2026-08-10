@@ -1,0 +1,5 @@
+schema_version: "0.1.0"
+flow_id: "flow-001"
+flow_request_id: "flow-request-001"
+status: "accepted"
+received_at: "2026-08-10T00:00:01Z"
