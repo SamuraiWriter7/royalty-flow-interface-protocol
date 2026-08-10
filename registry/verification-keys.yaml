@@ -1,0 +1,42 @@
+schema_version: "0.3.0"
+
+keys:
+  - key_id: "did:example:actor-platform-alpha#key-1"
+    controller_id: "actor-platform-alpha"
+    algorithm: "Ed25519"
+    public_key_jwk:
+      kty: "OKP"
+      crv: "Ed25519"
+      x: "h4bSpVQ0um2kR7DPaBmt33qtJ0QjDQ4A9d5ySHIBXjc"
+
+  - key_id: "did:example:flow-port-alpha#key-1"
+    controller_id: "flow-port-alpha"
+    algorithm: "Ed25519"
+    public_key_jwk:
+      kty: "OKP"
+      crv: "Ed25519"
+      x: "kVSmju3wBM4d76aZ7imrPzTGvpVjmNlu5FaguCONiJg"
+
+  - key_id: "did:example:trace-registry-alpha#key-1"
+    controller_id: "trace-registry-alpha"
+    algorithm: "Ed25519"
+    public_key_jwk:
+      kty: "OKP"
+      crv: "Ed25519"
+      x: "l1bleB-QRdyof1BRsyHRp5QeIecB446NF_bM9rsdWSs"
+
+  - key_id: "did:example:auditor-alpha#key-1"
+    controller_id: "auditor-alpha"
+    algorithm: "Ed25519"
+    public_key_jwk:
+      kty: "OKP"
+      crv: "Ed25519"
+      x: "xnNkVGl7hybunNTBFr0myHrAlY-M92FG850z50Gsec4"
+
+  - key_id: "did:example:settlement-agent-alpha#key-1"
+    controller_id: "settlement-agent-alpha"
+    algorithm: "Ed25519"
+    public_key_jwk:
+      kty: "OKP"
+      crv: "Ed25519"
+      x: "KIReMwgpE7aGeIsi6BAyCBaWB6yvONW1l906BvTxcl4"
