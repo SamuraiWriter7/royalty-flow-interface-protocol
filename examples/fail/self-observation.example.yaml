@@ -1,0 +1,24 @@
+schema_version: "0.5.0"
+
+observation_id: "observation-self-001"
+observer_id: "actor-platform-alpha"
+
+target_record_type: "flow-request"
+target_record_id: "flow-request-001"
+
+target_digest: "dH1VlFyRhF0fmhX7flHfVL8BR7EA1ezS8eniDfgtq98"
+
+digest_algorithm: "SHA-256"
+canonicalization: "JCS-RFC8785"
+
+observed_at: "2026-08-10T00:00:00.700000Z"
+
+signature:
+  algorithm: "Ed25519"
+  key_id: "did:example:actor-platform-alpha#key-1"
+  signer_id: "actor-platform-alpha"
+  canonicalization: "JCS-RFC8785"
+  scope: "record-without-signature-value"
+  encoding: "base64url"
+  signed_at: "2026-08-10T00:00:00.700000Z"
+  value: "9IrfPjqeQKMzAkvyNygOCPHVP0995nAZoNsX2oJc0tuYmJE1F4bYjtK6295QnjSVsgZVJ2meM22_23BK0DQsDA"
