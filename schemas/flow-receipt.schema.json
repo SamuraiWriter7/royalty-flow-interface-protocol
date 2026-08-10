@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:rfip:schema:flow-receipt:0.4.0",
+  "$id": "urn:rfip:schema:flow-receipt:0.5.0",
   "title": "RFIP Flow Receipt",
   "type": "object",
   "additionalProperties": false,
@@ -14,7 +14,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "0.4.0"
+      "const": "0.5.0"
     },
     "flow_id": {
       "type": "string",
@@ -40,7 +40,7 @@
       "minLength": 1
     },
     "signature": {
-      "$ref": "urn:rfip:schema:signature-envelope:0.4.0"
+      "$ref": "urn:rfip:schema:signature-envelope:0.5.0"
     }
   },
   "allOf": [
