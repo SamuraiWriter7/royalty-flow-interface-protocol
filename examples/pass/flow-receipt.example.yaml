@@ -1,4 +1,4 @@
-schema_version: "0.4.0"
+schema_version: "0.5.0"
 
 flow_id: "flow-001"
 flow_request_id: "flow-request-001"
@@ -15,4 +15,4 @@ signature:
   scope: "record-without-signature-value"
   encoding: "base64url"
   signed_at: "2026-08-10T00:00:01Z"
-  value: "nWhGoU47TIzQZkQ9vAxJNPe5bI6iJtrqCvNNLw52iIsIF1WGFa7h3eXAkwInC0d7iljcEwhKe9lxqXTorXXgBQ"
+  value: "nc_CI7yMDiopn55xH1r2R6rb1M-X1DVGIv0Ed8leHdH0GqEEaTFdoOIahcLqlthOYnhqp-B9iz6fnb32hh3CCA"
